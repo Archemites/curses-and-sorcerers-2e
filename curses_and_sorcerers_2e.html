@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curses and Sorcerers — 2ª Edição</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #c0392b;
+    --red-dim: #7d1c12;
+    --red-glow: #e74c3c;
+    --blue: #2980b9;
+    --blue-dim: #1a5276;
+    --gold: #d4ac0d;
+    --gold-dim: #9a7d0a;
+    --bg: #0d0d0d;
+    --bg2: #131313;
+    --bg3: #1a1a1a;
+    --bg4: #202020;
+    --text: #d4cfc8;
+    --text-dim: #8a847d;
+    --text-bright: #ede9e2;
+    --border: #2a2a2a;
+    --border-red: #3d1c19;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    text-align: center;
+    padding: 80px 20px 60px;
+    border-bottom: 1px solid var(--border-red);
+    margin-bottom: 60px;
+    position: relative;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--red-dim));
+  }
+  .cover-edition {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .cover-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(28px, 7vw, 52px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .cover-title .curses { color: var(--red-glow); }
+  .cover-title .sorcerers { color: var(--text-bright); }
+  .cover-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: var(--text-dim);
+    margin-top: 16px;
+    margin-bottom: 40px;
+  }
+  .cover-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .cover-divider-line {
+    height: 1px;
+    width: 80px;
+    background: linear-gradient(to right, transparent, var(--red-dim));
+  }
+  .cover-divider-line.right {
+    background: linear-gradient(to left, transparent, var(--red-dim));
+  }
+  .cover-divider-gem {
+    width: 6px; height: 6px;
+    background: var(--red);
+    transform: rotate(45deg);
+  }
+  .cover-intro {
+    max-width: 560px;
+    margin: 32px auto 0;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
+  /* ── CHAPTERS ── */
+  .chapter {
+    margin-bottom: 64px;
+  }
+  .chapter-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-red);
+  }
+  .chapter-num {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .chapter-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-red);
+  }
+  h2.chapter-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(18px, 4vw, 26px);
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 1px;
+    margin-bottom: 0;
+    line-height: 1.2;
+  }
+
+  /* ── SECTION HEADERS ── */
+  h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--red-glow);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 36px 0 14px;
+  }
+  h3.blue { color: #5dade2; }
+  h3.gold { color: var(--gold); }
+  h3.green { color: #58d68d; }
+  h3.purple { color: #a569bd; }
+
+  p { margin-bottom: 14px; }
+  p:last-child { margin-bottom: 0; }
+
+  em { color: var(--text-bright); font-style: italic; }
+  strong { color: var(--text-bright); font-weight: 600; }
+  .red { color: var(--red-glow); }
+  .blue { color: #5dade2; }
+  .gold { color: var(--gold); }
+  .green { color: #58d68d; }
+  .purple { color: #a569bd; }
+  .dim { color: var(--text-dim); }
+
+  /* ── ATTRIBUTE BLOCKS ── */
+  .attr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .attr-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--red-dim);
+    padding: 18px 18px 16px;
+    position: relative;
+  }
+  .attr-card.blue-top { border-top-color: #1a5276; }
+  .attr-card.gold-top { border-top-color: var(--gold-dim); }
+  .attr-card.green-top { border-top-color: #1d6a3a; }
+  .attr-card.purple-top { border-top-color: #6c3483; }
+
+  .attr-name {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-bright);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .attr-tag {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-bottom: 12px;
+    font-family: 'EB Garamond', serif;
+  }
+  .attr-list {
+    list-style: none;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .attr-list li {
+    padding: 2px 0 2px 14px;
+    position: relative;
+    color: var(--text);
+  }
+  .attr-list li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--red-dim);
+  }
+  .attr-list li.blue::before { color: #1a5276; }
+  .attr-list li.gold::before { color: var(--gold-dim); }
+  .attr-list li.green::before { color: #1d6a3a; }
+  .attr-list li.purple::before { color: #6c3483; }
+
+  .attr-warning {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: rgba(192, 57, 43, 0.1);
+    border-left: 2px solid var(--red-dim);
+    font-size: 13px;
+    color: var(--red-glow);
+    font-style: italic;
+    font-family: 'EB Garamond', serif;
+  }
+  .attr-warning.blue { background: rgba(41, 128, 185, 0.1); border-left-color: #1a5276; color: #5dade2; }
+  .attr-warning.gold { background: rgba(212, 172, 13, 0.1); border-left-color: var(--gold-dim); color: var(--gold); }
+  .attr-warning.green { background: rgba(88, 214, 141, 0.1); border-left-color: #1d6a3a; color: #58d68d; }
+  .attr-warning.purple { background: rgba(165, 105, 189, 0.1); border-left-color: #6c3483; color: #a569bd; }
+
+  /* ── BLOCK LABEL ── */
+  .block-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    display: inline-block;
+    margin-bottom: 16px;
+    border: 1px solid;
+  }
+  .block-label.corpo { color: var(--red); border-color: var(--red-dim); background: rgba(192,57,43,0.07); }
+  .block-label.mente { color: #5dade2; border-color: #1a5276; background: rgba(41,128,185,0.07); }
+
+  /* ── DICE TABLE ── */
+  .dice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 15px;
+  }
+  .dice-table th {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-red);
+  }
+  .dice-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .dice-table tr:last-child td { border-bottom: none; }
+  .dice-table tr:hover td { background: var(--bg3); }
+  .dice-badge {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--red-glow);
+    background: rgba(192,57,43,0.1);
+    padding: 2px 10px;
+    border: 1px solid var(--red-dim);
+  }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    padding: 18px 20px;
+    margin: 24px 0;
+    position: relative;
+  }
+  .callout.blue { border-left-color: #2980b9; }
+  .callout.gold { border-left-color: var(--gold); }
+  .callout.green { border-left-color: #27ae60; }
+  .callout.purple { border-left-color: #8e44ad; }
+  .callout.warning { border-left-color: #e67e22; background: rgba(230,126,34,0.05); }
+  .callout.danger { border-left-color: var(--red); background: rgba(192,57,43,0.07); }
+
+  .callout-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .callout-title.red { color: var(--red-glow); }
+  .callout-title.blue { color: #5dade2; }
+  .callout-title.gold { color: var(--gold); }
+  .callout-title.green { color: #58d68d; }
+  .callout-title.purple { color: #a569bd; }
+  .callout-title.orange { color: #e67e22; }
+  .callout p { font-size: 15px; margin-bottom: 8px; }
+
+  /* ── STATE TRACK ── */
+  .state-track {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 20px 0;
+  }
+  .state-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+  }
+  .state-name {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    min-width: 160px;
+  }
+  .state-penalty {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+  .state-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    flex: 1;
+    text-align: right;
+  }
+
+  .s-ok { color: #58d68d; }
+  .s-hurt { color: var(--gold); }
+  .s-bad { color: #e67e22; }
+  .s-crit { color: var(--red-glow); }
+  .s-dead { color: #c0392b; }
+  .s-mut { color: #a569bd; }
+
+  /* ── EXAMPLE BOXES ── */
+  .example {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+    margin: 20px 0;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--text-dim);
+  }
+  .example strong {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-style: normal;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* ── COMBAT ── */
+  .turn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .turn-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 16px;
+  }
+  .turn-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .turn-label.off { color: var(--red-glow); }
+  .turn-label.def { color: #5dade2; }
+  .turn-card ul {
+    list-style: none;
+    font-size: 15px;
+  }
+  .turn-card ul li {
+    padding: 3px 0 3px 14px;
+    position: relative;
+  }
+  .turn-card ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+
+  /* ── FOOTER DECORATION ── */
+  .chapter-end {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 40px;
+    opacity: 0.3;
+  }
+  .chapter-end-line { flex: 1; height: 1px; background: var(--border-red); }
+  .chapter-end-gem { width: 4px; height: 4px; background: var(--red-dim); transform: rotate(45deg); }
+
+  /* ── ATTR DIST TABLE ── */
+  .dist-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 15px;
+  }
+  .dist-table th {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-red);
+  }
+  .dist-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dist-table tr:last-child td { border-bottom: none; }
+
+  .new-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #58d68d;
+    background: rgba(88,214,141,0.1);
+    border: 1px solid rgba(88,214,141,0.3);
+    padding: 2px 7px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .changed-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(212,172,13,0.1);
+    border: 1px solid rgba(212,172,13,0.3);
+    padding: 2px 7px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  @media (max-width: 560px) {
+    .attr-grid { grid-template-columns: 1fr; }
+    .turn-grid { grid-template-columns: 1fr; }
+    .state-desc { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ CAPA -->
+<div class="cover">
+  <div class="cover-edition">Segunda Edição · Revisão Completa do Sistema</div>
+  <h1 class="cover-title">
+    <span class="curses">Curses</span><br>
+    <span style="font-size:0.45em; font-family:'Cinzel',serif; letter-spacing:6px; color:var(--text-dim)">— AND —</span><br>
+    <span class="sorcerers">Sorcerers</span>
+  </h1>
+  <div class="cover-subtitle">Manual do Sistema · 2ª Edição</div>
+  <div class="cover-divider">
+    <div class="cover-divider-line"></div>
+    <div class="cover-divider-gem"></div>
+    <div class="cover-divider-line right"></div>
+  </div>
+  <p class="cover-intro">
+    Um RPG de ação sobre feiticeiros que não vencem todas as lutas —
+    mas escolhem <em>quais lutas valem o preço</em>.
+    Nesta edição, o sistema foi reconstruído do zero com foco em
+    coerência mecânica, identidade de build e narrativa emergente do combate.
+  </p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ CAP 1 — FILOSOFIA -->
+<div class="chapter">
+  <div class="chapter-header">
+    <span class="chapter-num">Capítulo I</span>
+    <div class="chapter-line"></div>
+    <h2 class="chapter-title">Filosofia do Sistema</h2>
+  </div>
+
+  <p>
+    <strong>Curses and Sorcerers 2ª Edição</strong> foi construída sobre três pilares que devem
+    orientar cada decisão do mestre e de cada jogador durante a sessão:
+  </p>
+
+  <div class="callout gold">
+    <div class="callout-title gold">Pilar I — Poder tem custo real</div>
+    <p>Nenhum feiticeiro usa Energia Amaldiçoada de graça. Quanto maior a técnica,
+    maior o risco de o usuário sair danificado. Isso não é punição — é identidade.
+    Um personagem que nunca paga preço nenhum não é interessante.</p>
+  </div>
+
+  <div class="callout blue">
+    <div class="callout-title blue">Pilar II — Inimigos aprendem, não apenas resistem</div>
+    <p>Repetir a mesma técnica não é estratégia, é suicídio. Inimigos adaptam
+    seu comportamento com base na <span class="blue">Leitura</span> que possuem.
+    O combate exige improvisação constante — e essa pressão é intencional.</p>
+  </div>
+
+  <div class="callout danger">
+    <div class="callout-title red">Pilar III — Morte é permanente e merecida</div>
+    <p>Não existe <em>"chego a zero e acordo depois"</em>. O estado <strong>Morto</strong> é
+    definitivo. Mutilações são cicatrizes narrativas que ficam. O sistema não pune
+    o jogador — ele apenas honra as consequências das escolhas que o jogador fez.</p>
+  </div>
+
+  <h3>O que mudou da 1ª Edição</h3>
+  <p>A 1ª edição tinha uma base sólida mas apresentava algumas tensões mecânicas.
+  Esta revisão corrige os seguintes problemas identificados:</p>
+
+  <ul style="list-style:none; font-size:15px; line-height:2;">
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">✕</span> <strong>Agilidade e Sagacidade eram redundantes</strong> — fundidos e redistribuídos em <span class="blue">Reflexo</span> e <span class="gold">Leitura</span>, com funções bem delimitadas.</li>
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">✕</span> <strong>Vontade determinava EA</strong> — problema conceitual. EA é uma reserva inata, não força de vontade. Agora existe o atributo <span class="purple">Fluxo</span>, separado.</li>
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">✕</span> <strong>Sem mecânica de dano físico bruto</strong> — feiticeiros que lutam no corpo não tinham expressão mecânica. <span class="red">Ímpeto</span> resolve isso.</li>
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">✕</span> <strong>Escalada de dados confusa</strong> — o sistema 1d4→1d20 foi substituído por uma escada limpa de dados por rank.</li>
+  </ul>
+
+  <div class="chapter-end">
+    <div class="chapter-end-line"></div>
+    <div class="chapter-end-gem"></div>
+    <div class="chapter-end-line"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ CAP 2 — PERSONAGEM -->
+<div class="chapter">
+  <div class="chapter-header">
+    <span class="chapter-num">Capítulo II</span>
+    <div class="chapter-line"></div>
+    <h2 class="chapter-title">Criando seu Feiticeiro</h2>
+  </div>
+
+  <p>
+    Criar um feiticeiro em <em>C&amp;S 2e</em> é um processo em quatro etapas:
+    <strong>Identidade</strong>, <strong>Técnica Inata</strong>, <strong>Atributos</strong> e <strong>Atributos Simples</strong>.
+    Cada etapa informa a seguinte — por isso, na ordem.
+  </p>
+
+  <h3>Etapa 1 — Identidade</h3>
+  <p>
+    Defina a <strong>aparência</strong> do seu personagem em texto livre: tom de pele, altura, cabelo,
+    marcas, forma de se vestir. Escolha um <strong>nome</strong> adequado ao tom da campanha.
+    Escreva uma <strong>história pessoal</strong> — não um currículo, mas os <em>três momentos-chave</em>
+    que explicam quem ele é agora. O que o quebrou? O que o fez lutar? O que ele não consegue largar?
+  </p>
+
+  <h3>Etapa 2 — Técnica Inata</h3>
+  <p>
+    Sua Técnica Inata é inseparável da sua personalidade. Responda o questionário de análise
+    enviado pelo mestre — as respostas definem a <em>natureza</em> da sua EA e, consequentemente,
+    a forma que sua técnica assume. Depois, construa a técnica em conjunto com o mestre usando
+    os resultados da análise como base.
+  </p>
+  <div class="callout warning">
+    <div class="callout-title orange">Nota ao Mestre</div>
+    <p>A técnica deve refletir a psicologia do personagem, não o que o jogador acha mais poderoso.
+    Um personagem obcecado com controle pode ter uma técnica precisa e de baixo custo.
+    Um personagem impulsivo pode ter uma técnica devastadora que macuca ele mesmo se usada sem cuidado.</p>
+  </div>
+
+  <h3>Etapa 3 — Distribuindo Atributos</h3>
+  <p>
+    Um feiticeiro iniciante começa com todos os 7 atributos no valor <strong>1</strong>.
+    O jogador então distribui <strong>5 pontos extras</strong> livremente entre eles.
+    Nenhum atributo pode ultrapassar <strong>4</strong> na criação do personagem
+    (o valor máximo absoluto é 5, atingível apenas com progressão).
+  </p>
+
+  <table class="dist-table">
+    <thead>
+      <tr>
+        <th>Atributo</th>
+        <th>Bloco</th>
+        <th>Valor Inicial</th>
+        <th>Dado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong class="red">Tempero</strong> <span class="changed-badge">renomeado</span></td>
+        <td><span style="color:var(--red);font-size:13px;">Corpo</span></td>
+        <td>1</td>
+        <td>1d4</td>
+      </tr>
+      <tr>
+        <td><strong class="red">Ímpeto</strong> <span class="new-badge">novo</span></td>
+        <td><span style="color:var(--red);font-size:13px;">Corpo</span></td>
+        <td>1</td>
+        <td>1d4</td>
+      </tr>
+      <tr>
+        <td><strong class="red">Reflexo</strong> <span class="changed-badge">fusão</span></td>
+        <td><span style="color:var(--red);font-size:13px;">Corpo</span></td>
+        <td>1</td>
+        <td>1d4</td>
+      </tr>
+      <tr>
+        <td><strong class="blue">Refinamento</strong> <span class="changed-badge">renomeado</span></td>
+        <td><span style="color:#5dade2;font-size:13px;">Mente</span></td>
+        <td>1</td>
+        <td>1d4</td>
+      </tr>
+      <tr>
+        <td><strong class="purple">Fluxo</strong> <span class="new-badge">novo</span></td>
+        <td><span style="color:#5dade2;font-size:13px;">Mente</span></td>
+        <td>1</td>
+        <td>1d4</td>
+      </tr>
+      <tr>
+        <td><strong class="blue">Vontade</strong></td>
+        <td><span style="color:#5dade2;font-size:13px;">Mente</span></td>
+        <td>1</td>
+        <td>1d4</td>
+      </tr>
+      <tr>
+        <td><strong class="gold">Leitura</strong> <span class="changed-badge">refocado</span></td>
+        <td><span style="color:#5dade2;font-size:13px;">Mente</span></td>
+        <td>1</td>
+        <td>1d4</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="example">
+    <strong>Exemplo de distribuição — "O Bruto Técnico"</strong>
+    Tempero 2 · Ímpeto 3 · Reflexo 2 · Refinamento 1 · Fluxo 2 · Vontade 1 · Leitura 1<br>
+    <span style="color:var(--text-dim)">5 pontos extras distribuídos: +1 Tempero, +2 Ímpeto, +1 Reflexo, +1 Fluxo.</span>
+  </div>
+
+  <div class="chapter-end">
+    <div class="chapter-end-line"></div>
+    <div class="chapter-end-gem"></div>
+    <div class="chapter-end-line"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ CAP 3 — ATRIBUTOS -->
+<div class="chapter">
+  <div class="chapter-header">
+    <span class="chapter-num">Capítulo III</span>
+    <div class="chapter-line"></div>
+    <h2 class="chapter-title">Os Sete Atributos</h2>
+  </div>
+
+  <p>
+    Os atributos em <em>C&amp;S 2e</em> são divididos em dois blocos: <span class="red"><strong>Corpo</strong></span>
+    — o que seu feiticeiro <em>é</em> fisicamente — e <span class="blue"><strong>Mente</strong></span>
+    — o que ele <em>canaliza e percebe</em>.
+    Um investimento pesado em apenas um bloco cria um personagem viável porém vulnerável.
+    A combinação define o estilo de combate.
+  </p>
+
+  <h3 style="margin-top:28px;">A Escada de Dados</h3>
+  <p>
+    Cada valor em um atributo corresponde ao dado que o jogador rola nos testes associados a ele.
+    A escada é fixa e limpa — sem exceções:
+  </p>
+
+  <table class="dice-table">
+    <thead>
+      <tr>
+        <th>Valor</th>
+        <th>Dado</th>
+        <th>Faixa de resultado</th>
+        <th>Perfil</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1</strong></td>
+        <td><span class="dice-badge">1d4</span></td>
+        <td>1 – 4</td>
+        <td style="font-size:14px; color:var(--text-dim);">Iniciante, despreparado</td>
+      </tr>
+      <tr>
+        <td><strong>2</strong></td>
+        <td><span class="dice-badge">1d6</span></td>
+        <td>1 – 6</td>
+        <td style="font-size:14px; color:var(--text-dim);">Treinado, funcional</td>
+      </tr>
+      <tr>
+        <td><strong>3</strong></td>
+        <td><span class="dice-badge">1d8</span></td>
+        <td>1 – 8</td>
+        <td style="font-size:14px; color:var(--text-dim);">Especialista, confiável</td>
+      </tr>
+      <tr>
+        <td><strong>4</strong></td>
+        <td><span class="dice-badge">1d10</span></td>
+        <td>1 – 10</td>
+        <td style="font-size:14px; color:var(--text-dim);">Elite, temível</td>
+      </tr>
+      <tr>
+        <td><strong>5</strong></td>
+        <td><span class="dice-badge">1d12</span></td>
+        <td>1 – 12</td>
+        <td style="font-size:14px; color:var(--text-dim);">Pico humano, excepcional</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:15px; color:var(--text-dim); font-style:italic;">
+    Sucesso em um teste ocorre quando o resultado do dado é
+    <strong style="color:var(--text);">maior que a metade do valor máximo</strong> daquele dado.
+    Ex: 1d8 → sucesso com 5 ou mais. O mestre pode ajustar essa linha para testes excepcionalmente
+    difíceis ou fáceis, mas sem revelar os valores ao jogador.
+  </p>
+
+  <!-- BLOCO CORPO -->
+  <h3 style="margin-top:40px; color:var(--red-glow);">▸ Bloco Corpo</h3>
+  <div class="block-label corpo">Bloco Corpo</div>
+  <p style="font-size:15px; margin-bottom:20px;">
+    Governam a presença física do feiticeiro — quanto ele aguenta, quanto ele machuca e
+    o quão rápido ele reage. Um feiticeiro com Corpo alto não precisa de técnicas para ser perigoso.
+  </p>
+
+  <div class="attr-grid">
+    <div class="attr-card">
+      <div class="attr-name">Tempero</div>
+      <div class="attr-tag">Resistência física e estados do corpo</div>
+      <ul class="attr-list">
+        <li>Define o limiar de dano para trocar de estado físico</li>
+        <li>Rola para recuperação natural pós-combate</li>
+        <li>Rola para tentar se curar durante o combate (custa o turno)</li>
+        <li>Resistência passiva a dano físico contínuo (sangramento)</li>
+      </ul>
+      <div class="attr-warning">
+        Quando chega a zero → mutilação ou morte, nunca desmaio.
+      </div>
+    </div>
+
+    <div class="attr-card">
+      <div class="attr-name red">Ímpeto</div>
+      <div class="attr-tag">Potência física bruta e pressão ofensiva</div>
+      <ul class="attr-list">
+        <li>Dano base dos ataques físicos (socos, armas)</li>
+        <li>Capacidade de romper guarda ou armaduras</li>
+        <li>Mantém pressão — inimigos recuam mais rápido</li>
+        <li>Pode ser somado à EA em ataques mistos</li>
+      </ul>
+      <div class="attr-warning">
+        Feiticeiro com Ímpeto 1 atacando fisicamente é um inconveniente, não uma ameaça.
+      </div>
+    </div>
+
+    <div class="attr-card">
+      <div class="attr-name">Reflexo</div>
+      <div class="attr-tag">Velocidade, esquiva e posicionamento</div>
+      <ul class="attr-list">
+        <li>Determina ordem de iniciativa no combate</li>
+        <li>Rola para esquivar de ataques físicos e técnicas</li>
+        <li>Posicionamento tático (flanquear, criar distância)</li>
+        <li>Velocidade de execução de técnicas rápidas</li>
+      </ul>
+      <div class="attr-warning">
+        Reflexo baixo significa que o inimigo sempre age primeiro.
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOCO MENTE -->
+  <h3 style="margin-top:40px; color:#5dade2;">▸ Bloco Mente</h3>
+  <div class="block-label mente">Bloco Mente</div>
+  <p style="font-size:15px; margin-bottom:20px;">
+    Governam como o feiticeiro canaliza, controla e percebe Energia Amaldiçoada.
+    Um feiticeiro com Mente alta pode fazer mais com menos — mas paga o preço diferente.
+  </p>
+
+  <div class="attr-grid">
+    <div class="attr-card blue-top">
+      <div class="attr-name" style="color:#5dade2;">Refinamento</div>
+      <div class="attr-tag">Precisão e eficiência na canalização de EA</div>
+      <ul class="attr-list">
+        <li class="blue">Reduz o custo de EA de técnicas (ver tabela)</li>
+        <li class="blue">Estabilidade dos efeitos — técnicas saem como o planejado</li>
+        <li class="blue">Requisito para técnicas avançadas e domínios</li>
+        <li class="blue">Falha aqui = a técnica se desmancha ou vira contra o usuário</li>
+      </ul>
+      <div class="attr-warning blue">
+        Refinamento baixo com muita EA é uma combinação perigosa para o usuário.
+      </div>
+    </div>
+
+    <div class="attr-card purple-top">
+      <div class="attr-name" style="color:#a569bd;">Fluxo</div>
+      <div class="attr-tag">Reserva total de Energia Amaldiçoada</div>
+      <ul class="attr-list">
+        <li class="purple">Rola seu dado no início da campanha → total de EA</li>
+        <li class="purple">Define a escala das suas técnicas (mais EA = mais poder)</li>
+        <li class="purple">Difícil de aumentar — é uma característica inata</li>
+        <li class="purple">Inversamente, quanto mais Fluxo, mais difícil esconder sua presença</li>
+      </ul>
+      <div class="attr-warning purple">
+        Fluxo é inato. Não é disciplina — é natureza. Faz sentido ser raro e caro de aumentar.
+      </div>
+    </div>
+
+    <div class="attr-card blue-top">
+      <div class="attr-name" style="color:#5dade2;">Vontade</div>
+      <div class="attr-tag">Estabilidade mental e resistência psíquica</div>
+      <ul class="attr-list">
+        <li class="blue">Resistência a domínios e ilusões</li>
+        <li class="blue">Capacidade de manter votos sob pressão</li>
+        <li class="blue">Resistência ao medo e colapso psicológico</li>
+        <li class="blue">Recuperação de EA acelerada em repouso</li>
+      </ul>
+      <div class="attr-warning blue">
+        Vontade baixa = personagem quebra antes do corpo em confrontos de domínio.
+      </div>
+    </div>
+
+    <div class="attr-card gold-top">
+      <div class="attr-name" style="color:var(--gold);">Leitura</div>
+      <div class="attr-tag">Percepção de combate e análise de padrões</div>
+      <ul class="attr-list">
+        <li class="gold">Identifica técnicas inimigas após vê-las uma vez</li>
+        <li class="gold">Antecipa o próximo movimento do inimigo</li>
+        <li class="gold">Detecta maldições e armadilhas amaldiçoadas</li>
+        <li class="gold">Contra-golpe: bônus de ataque após esquivar com sucesso</li>
+      </ul>
+      <div class="attr-warning gold">
+        Leitura baixa significa que o inimigo aprende com você antes de você aprender com ele.
+      </div>
+    </div>
+  </div>
+
+  <div class="chapter-end">
+    <div class="chapter-end-line"></div>
+    <div class="chapter-end-gem"></div>
+    <div class="chapter-end-line"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ CAP 4 — ATRIBUTOS SIMPLES -->
+<div class="chapter">
+  <div class="chapter-header">
+    <span class="chapter-num">Capítulo IV</span>
+    <div class="chapter-line"></div>
+    <h2 class="chapter-title">Vida, Energia e Armadura</h2>
+  </div>
+
+  <!-- VIDA -->
+  <h3>Sistema de Vida — Estados Físicos</h3>
+  <p>
+    Vida não é uma barra numérica. É uma sequência de <strong>estados corporais</strong>.
+    Cada estado reflete a condição real do corpo do feiticeiro e aplica penalidades cumulativas
+    em todos os testes. O que importa é <strong>quando</strong> o personagem troca de estado —
+    e esse limiar é definido pelo atributo <span class="red">Tempero</span>.
+  </p>
+
+  <h3 style="color:var(--gold);">Calculando o Limiar de Troca de Estado</h3>
+  <p>
+    No início da campanha, o jogador rola seu dado de <span class="red">Tempero</span>.
+    O resultado é o <strong>Limiar</strong> — quantos pontos de dano são necessários
+    para piorar um estado. Esse valor é pessoal e secreto: o jogador sabe, o mestre sabe,
+    o inimigo não sabe.
+  </p>
+
+  <div class="example">
+    <strong>Exemplo</strong>
+    Rina tem Tempero 3, logo rola 1d8. Tira 6. Seu Limiar é 6.
+    Ela precisa receber 6 pontos de dano acumulados para passar de <span class="s-ok">Íntegro</span>
+    para <span class="s-hurt">Ferido</span> — e outros 6 para passar de Ferido para
+    <span class="s-bad">Gravemente Ferido</span>, e assim por diante.
+  </div>
+
+  <h3 style="color:var(--gold);">Os Estados</h3>
+  <div class="state-track">
+    <div class="state-row">
+      <div class="state-name s-ok">Íntegro</div>
+      <div class="state-penalty">Sem penalidade</div>
+      <div class="state-desc">Estado padrão</div>
+    </div>
+    <div class="state-row">
+      <div class="state-name s-hurt">Ferido</div>
+      <div class="state-penalty">–1 em todos os testes</div>
+      <div class="state-desc">Visible wounds, movement impaired</div>
+    </div>
+    <div class="state-row">
+      <div class="state-name s-bad">Gravemente Ferido</div>
+      <div class="state-penalty">–2 em todos os testes + Sangramento</div>
+      <div class="state-desc">Sangramento: 1 de dano/turno</div>
+    </div>
+    <div class="state-row" style="border-left:2px solid var(--red-dim);">
+      <div class="state-name s-crit">À Beira da Morte</div>
+      <div class="state-penalty">–3 em todos os testes + Sangramento</div>
+      <div class="state-desc">Uma decisão ruim e acabou</div>
+    </div>
+    <div class="state-row" style="border-left:2px solid #7d1c12;">
+      <div class="state-name s-dead">Morto</div>
+      <div class="state-penalty">Permanente</div>
+      <div class="state-desc">O que poderia significar?</div>
+    </div>
+    <div class="state-row" style="border-left:2px solid #6c3483; margin-top:8px;">
+      <div class="state-name s-mut">Mutilado</div>
+      <div class="state-penalty">–2 permanente (irrecuperável)</div>
+      <div class="state-desc">Pode ocorrer em qualquer estado além de Ferido</div>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-title orange">Importante — Mutilação</div>
+    <p>
+      Mutilação não é um estado de progressão — é uma consequência pontual
+      que pode acontecer por falha crítica, decisão narrativa do mestre ou uso extremo de EA.
+      Um personagem pode estar <span class="s-ok">Íntegro</span> e ainda ter uma mão mutilada de
+      uma sessão anterior. Cicatrizes ficam.
+    </p>
+  </div>
+
+  <h3 style="color:var(--gold);">Escalando o Limiar</h3>
+  <p>
+    O Limiar de Tempero pode aumentar de duas formas:
+  </p>
+  <p>
+    <strong>Recuperação natural pós-combate:</strong> se o personagem terminar o combate
+    no estado <span class="s-hurt">Ferido</span> ou <span class="s-bad">Gravemente Ferido</span>
+    e descansar sem técnicas ou medicina, ele rola seu dado de Tempero.
+    O resultado é somado ao Limiar atual — o corpo se fortalece com o trauma.
+    Ferido: +resultado do dado. Gravemente Ferido: +resultado do dado ×2.
+  </p>
+  <p>
+    <strong>Investir pontos em Tempero:</strong> ao ganhar um ponto em Tempero,
+    o jogador rola o novo dado e soma <em>metade</em> do resultado ao Limiar anterior.
+  </p>
+
+  <div class="example">
+    <strong>Exemplo — Investindo em Tempero</strong>
+    Rina começa com Limiar 6 (Tempero 2, rolou 1d6=6). Investe 1 ponto → Tempero 3.
+    Rola 1d8 e tira 10. Soma metade: 5. Novo Limiar: 6 + 5 = 11.
+    Agora ela precisa de 11 pontos de dano para mudar de estado.
+  </div>
+
+  <h3 style="color:var(--gold);">Recuperando Estados em Combate</h3>
+  <p>
+    Em seu turno, o personagem pode tentar recuperar um estado usando seu dado de Tempero.
+    Em caso de sucesso, melhora um estado (ex: Gravemente Ferido → Ferido).
+    Isso <strong>consome o turno inteiro</strong> — sem ação ofensiva ou defensiva.
+    Ao recuperar por esse meio, o Limiar <em>não aumenta</em> — o corpo foi forçado,
+    não curado de verdade.
+  </p>
+
+  <!-- EA -->
+  <h3 style="margin-top:44px;" class="purple">Energia Amaldiçoada</h3>
+  <p>
+    EA é a moeda do combate sobrenatural. Sem ela, você é um lutador comum
+    — talvez capaz, talvez não. Com ela, você é um feiticeiro.
+    Mas a barra de EA não se recarrega rápido, e gastar demais te deixa exposto.
+  </p>
+
+  <h3 class="purple">Calculando EA Total</h3>
+  <p>
+    No início da campanha, o jogador rola seu dado de <span class="purple">Fluxo</span>.
+    O resultado é o total de EA do personagem. Esse valor pode aumentar ao investir em Fluxo
+    (mesmo sistema que Tempero: rola novo dado, soma metade ao valor anterior).
+  </p>
+
+  <div class="example">
+    <strong>Exemplo</strong>
+    Kira tem Fluxo 2, logo rola 1d6. Tira 5. Ela tem 5 pontos de EA.
+    Ao gastar 3 numa técnica padrão, sobra 2 — o que é tenso.
+  </div>
+
+  <h3 class="purple">Usando EA</h3>
+  <table class="dice-table">
+    <thead>
+      <tr><th>Uso</th><th>Custo de EA</th><th>Dificuldade no Refinamento</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Técnica básica</td>
+        <td>3</td>
+        <td>Normal (acima da metade do dado)</td>
+      </tr>
+      <tr>
+        <td>Técnica potencializada (+1 nível)</td>
+        <td>+2 extra</td>
+        <td>Difícil (acima de 75% do dado)</td>
+      </tr>
+      <tr>
+        <td>Técnica potencializada (+2 níveis)</td>
+        <td>+4 extra</td>
+        <td>Muito difícil — falha pode mutilar/matar o usuário</td>
+      </tr>
+      <tr>
+        <td>Imbuir EA em ataque físico</td>
+        <td>1 por nível de dano</td>
+        <td>Teste de Refinamento leve</td>
+      </tr>
+      <tr>
+        <td>Expansão de Domínio</td>
+        <td>Toda a barra de EA</td>
+        <td>Teste de Refinamento + Vontade simultâneos</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 class="purple">Recuperando EA</h3>
+  <p>
+    Ao passar um turno <em>inteiro</em> sem usar EA — seja se defendendo, se reposicionando ou
+    simplesmente esperando — o personagem recupera <strong>1d4 de EA</strong>.
+    Em repouso fora de combate, recupera a barra completa com 10 minutos de concentração
+    (teste de Vontade bem-sucedido reduz para 5 minutos).
+  </p>
+
+  <div class="callout danger">
+    <div class="callout-title red">EA Zerada em Combate</div>
+    <p>
+      Um feiticeiro sem EA é um alvo. Ele não pode usar técnicas amaldiçoadas,
+      não pode imbuir ataques e não pode ativar domínios. Ainda pode lutar fisicamente,
+      mas sem apoio sobrenatural — e o inimigo provavelmente já percebeu isso pela
+      queda na intensidade da sua presença amaldiçoada.
+    </p>
+  </div>
+
+  <h3 class="purple">Expansões de Domínio</h3>
+  <p>
+    Uma Expansão de Domínio consome toda a EA do personagem imediatamente.
+    Em troca, durante <strong>3 turnos</strong>, o usuário tem acesso irrestrito à EA —
+    podendo usar técnicas sem custo individual, limitado apenas pelo total inscrito na ficha.
+    Ao fim do 3º turno, o personagem fica com EA zerada, independente do que usou.
+  </p>
+  <p>
+    A Expansão exige um teste simultâneo de <span class="blue">Refinamento</span> e
+    <span class="blue">Vontade</span>. Falhar em ambos = a Expansão colapsa no 1º turno e o dano ricocheta no usuário.
+    Falhar apenas em Refinamento = a Expansão dura apenas 1 turno.
+    Falhar apenas em Vontade = a Expansão dura normalmente, mas o usuário fica com –2 em todos os testes durante ela.
+  </p>
+
+  <!-- ARMADURAS -->
+  <h3 style="margin-top:44px;" class="green">Armaduras</h3>
+  <p>
+    Armaduras são equipamentos físicos que absorvem golpes antes de afetar os estados do personagem.
+    Cada armadura tem uma <strong>Durabilidade</strong> de 1 a 3 — o número de golpes que aguenta
+    antes de se destruir. Após a durabilidade se esgotar, a armadura quebra completamente e não
+    funciona mais.
+  </p>
+  <p>
+    Golpes absorvidos pela armadura <em>não contam</em> para o Limiar de Tempero.
+    Armaduras não regeneram entre combates — são consumíveis narrativos.
+  </p>
+
+  <div class="chapter-end">
+    <div class="chapter-end-line"></div>
+    <div class="chapter-end-gem"></div>
+    <div class="chapter-end-line"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ CAP 5 — TESTES -->
+<div class="chapter">
+  <div class="chapter-header">
+    <span class="chapter-num">Capítulo V</span>
+    <div class="chapter-line"></div>
+    <h2 class="chapter-title">Testes e Dificuldade</h2>
+  </div>
+
+  <p>
+    Todo teste em <em>C&amp;S 2e</em> segue a mesma estrutura:
+    <strong>rolar o dado do atributo relevante</strong> e comparar com o <em>Limiar de Sucesso</em>,
+    que é a metade do valor máximo daquele dado. O mestre nunca revela os modificadores — apenas
+    narra o resultado.
+  </p>
+
+  <h3>Limiares Padrão</h3>
+  <table class="dice-table">
+    <thead>
+      <tr>
+        <th>Dado</th>
+        <th>Sucesso normal</th>
+        <th>Sucesso difícil</th>
+        <th>Sucesso muito difícil</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1d4</td><td>3+</td><td>4</td><td>—</td></tr>
+      <tr><td>1d6</td><td>4+</td><td>5+</td><td>6</td></tr>
+      <tr><td>1d8</td><td>5+</td><td>6+</td><td>7+</td></tr>
+      <tr><td>1d10</td><td>6+</td><td>8+</td><td>9+</td></tr>
+      <tr><td>1d12</td><td>7+</td><td>9+</td><td>11+</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Falha Crítica</h3>
+  <p>
+    Tirar o valor <strong>mínimo do dado (1)</strong> é uma Falha Crítica.
+    O efeito varia por atributo:
+  </p>
+  <ul style="list-style:none; font-size:15px; line-height:2.2;">
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">1</span> em <strong class="red">Tempero</strong> ao tentar curar → o estado piora em vez de melhorar.</li>
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">1</span> em <strong class="red">Ímpeto</strong> num ataque → abre brecha, inimigo tem ação extra.</li>
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">1</span> em <strong class="red">Reflexo</strong> ao esquivar → acerto confirmado + bônus de dano ao inimigo.</li>
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">1</span> em <span class="blue"><strong>Refinamento</strong></span> ao usar técnica → a técnica colapsa. Se havia muita EA envolvida, causa dano ao próprio usuário. Com EA extrema, pode mutilar.</li>
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">1</span> em <span class="blue"><strong>Vontade</strong></span> num domínio → o usuário é afetado pelo próprio domínio.</li>
+    <li style="padding-left:18px; position:relative;"><span style="position:absolute;left:0;color:var(--red);">1</span> em <span class="gold"><strong>Leitura</strong></span> → o inimigo leu você antes. Ele age com vantagem no próximo turno.</li>
+  </ul>
+
+  <h3>Memória de Combate — Inimigos Aprendem</h3>
+  <p>
+    Cada vez que o jogador usa a mesma técnica ou padrão de ataque, o mestre marca mentalmente.
+    A partir da <em>terceira repetição consecutiva</em> (ou mais rápido, dependendo da
+    <span class="gold">Leitura</span> do inimigo), o inimigo desenvolve uma resposta.
+    Isso pode ser imunidade parcial, esquiva automática ou uma contra-técnica específica.
+  </p>
+  <p>
+    O jogador não é notificado quando isso acontece. Ele percebe pelo resultado das rolagens.
+  </p>
+
+  <div class="chapter-end">
+    <div class="chapter-end-line"></div>
+    <div class="chapter-end-gem"></div>
+    <div class="chapter-end-line"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ CAP 6 — COMBATE -->
+<div class="chapter">
+  <div class="chapter-header">
+    <span class="chapter-num">Capítulo VI</span>
+    <div class="chapter-line"></div>
+    <h2 class="chapter-title">Combate</h2>
+  </div>
+
+  <p>
+    O combate em <em>C&amp;S 2e</em> é planejado para ser <strong>curto, brutal e adaptativo</strong>.
+    Rounds longos incentivam padrões repetitivos — que o inimigo vai explorar.
+    A estrutura de turno é propositalmente restritiva.
+  </p>
+
+  <h3>Ordem de Turno</h3>
+  <p>
+    No início de um combate, todos os participantes rolam <span class="red">Reflexo</span>.
+    O resultado determina a ordem de ação (maior age primeiro).
+    Empates são resolvidos narrativamente — o mestre decide com base no contexto.
+  </p>
+
+  <h3>Estrutura de Turno</h3>
+  <p>
+    Em seu turno, o personagem pode realizar <strong>exatamente uma das seguintes</strong>:
+  </p>
+
+  <div class="turn-grid">
+    <div class="turn-card">
+      <div class="turn-label off">▸ Ação Ofensiva</div>
+      <ul>
+        <li>Atacar fisicamente (rola Ímpeto)</li>
+        <li>Usar uma técnica amaldiçoada (rola Refinamento)</li>
+        <li>Preparar um ataque (canaliza EA sem gastar, ataque próximo turno com bônus)</li>
+        <li>Usar uma Expansão de Domínio</li>
+      </ul>
+    </div>
+    <div class="turn-card">
+      <div class="turn-label def">▸ Ação Defensiva</div>
+      <ul>
+        <li>Esquivar (rola Reflexo)</li>
+        <li>Defender golpe — reduz dano mas não evita (rola Tempero)</li>
+        <li>Recuar — sai do alcance do inimigo atual</li>
+        <li>Tentativa de cura (rola Tempero — custa turno)</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>
+    Além disso, o personagem pode usar <strong>1 consumível por turno</strong>.
+    O efeito do consumível dura apenas aquele turno. Não existe ação gratuita — tudo tem custo.
+  </p>
+
+  <h3>Sangramento</h3>
+  <p>
+    O efeito de Sangramento é ativado automaticamente ao entrar nos estados
+    <span class="s-bad">Gravemente Ferido</span> ou <span class="s-crit">À Beira da Morte</span>.
+    A cada turno, o personagem recebe <strong>1 ponto de dano</strong> que conta para o Limiar —
+    ou seja, sem tratamento, o estado continua piorando mesmo sem novos golpes.
+  </p>
+  <p>
+    Sangramento pode ser interrompido com medicina básica (ação fora de combate)
+    ou com certas técnicas de reverso. Em combate, o mestre pode permitir um teste de Tempero
+    para estancar — mas isso consome o turno.
+  </p>
+
+  <h3>Contra-Golpe</h3>
+  <p>
+    Se o personagem esquivar com <strong>sucesso no teste de Reflexo</strong>, ele pode escolher
+    fazer um teste de <span class="gold">Leitura</span> imediatamente.
+    Em caso de sucesso, ele identifica uma abertura e tem um bônus de +1 dado no próximo ataque
+    nesse mesmo turno — mas o ataque conta como sua ação ofensiva.
+    Em caso de falha, simplesmente esquivou. Nenhuma penalidade.
+  </p>
+
+  <h3>Dano de Ataques Físicos</h3>
+  <p>
+    Ataques físicos rolam o dado de <span class="red">Ímpeto</span> do atacante.
+    O resultado vai direto contra o Limiar do alvo — sem subtrair defesa, sem modificador fixo.
+    Armaduras absorvem o golpe inteiro se ainda tiverem Durabilidade.
+  </p>
+
+  <h3>Dano de Técnicas</h3>
+  <p>
+    O dano de uma técnica é definido <em>pela quantidade de EA investida</em>, não por um valor fixo.
+    O mestre e o jogador acordam, durante a criação da técnica, a fórmula de escalonamento.
+    Exemplo: "Cada 2 pontos de EA = 1d6 de dano." Isso cria técnicas com identidade própria
+    e incentiva o jogador a decidir quanto arriscar a cada uso.
+  </p>
+
+  <div class="callout gold">
+    <div class="callout-title gold">Princípio de Ouro do Combate</div>
+    <p>
+      O combate mais perigoso em C&amp;S não é o mais longo — é o que começa mal.
+      Um turno perdido, uma falha de Reflexo no início, uma técnica que falha e ricocheia:
+      esses momentos definem combates. A narrativa emerge do dado, não apesar dele.
+    </p>
+  </div>
+
+  <div class="chapter-end">
+    <div class="chapter-end-line"></div>
+    <div class="chapter-end-gem"></div>
+    <div class="chapter-end-line"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ CAP 7 — PROGRESSÃO -->
+<div class="chapter">
+  <div class="chapter-header">
+    <span class="chapter-num">Capítulo VII</span>
+    <div class="chapter-line"></div>
+    <h2 class="chapter-title">Progressão e Evolução</h2>
+  </div>
+
+  <p>
+    Feiticeiros não evoluem por acumular pontos de experiência genéricos.
+    Eles evoluem por <em>sobreviver ao que não deveriam ter sobrevivido</em> —
+    e por carregar as marcas disso.
+  </p>
+
+  <h3>Quando o Mestre Concede Progressão</h3>
+  <p>
+    O mestre concede <strong>1 ponto de atributo</strong> ao fim de uma sessão quando o personagem:
+  </p>
+  <ul style="list-style:none;font-size:15px;line-height:2;">
+    <li style="padding-left:18px;position:relative;"><span style="position:absolute;left:0;color:var(--gold);">◆</span> Sobreviveu a um combate onde esteve À Beira da Morte</li>
+    <li style="padding-left:18px;position:relative;"><span style="position:absolute;left:0;color:var(--gold);">◆</span> Usou uma técnica de forma criativa que resolveu uma situação impossível</li>
+    <li style="padding-left:18px;position:relative;"><span style="position:absolute;left:0;color:var(--gold);">◆</span> Fez uma escolha de alto custo pessoal que moveu a narrativa</li>
+    <li style="padding-left:18px;position:relative;"><span style="position:absolute;left:0;color:var(--gold);">◆</span> Falhou de forma interessante — e a falha criou algo novo na história</li>
+  </ul>
+
+  <h3>Restrições de Progressão</h3>
+  <p>
+    Nenhum atributo pode ultrapassar <strong>5</strong>, nunca.
+    O atributo <span class="purple">Fluxo</span> só pode ser aumentado 1 vez por arco narrativo —
+    ele é uma propriedade inata, não uma habilidade treinável.
+    Aumentar Tempero ou Fluxo exige a rolagem adicional descrita nos capítulos anteriores.
+  </p>
+
+  <h3>Técnicas Evoluem Narrativamente</h3>
+  <p>
+    A Técnica Inata de um personagem <em>não cresce por pontos</em> — cresce pela história.
+    Se o personagem sobreviveu a algo traumático usando sua técnica, o mestre pode conceder
+    uma <strong>extensão da técnica</strong>: um novo efeito, uma aplicação alternativa ou
+    uma versão mais eficiente. Isso é sempre acordado entre mestre e jogador, nunca unilateral.
+  </p>
+
+  <div class="callout blue">
+    <div class="callout-title blue">Nota Final ao Jogador</div>
+    <p>
+      Curses and Sorcerers não te recompensa por jogar com segurança.
+      Um personagem que nunca arriscou, nunca errou e nunca sangrou provavelmente
+      também não tem uma história interessante para contar.
+      O dado é parcial — mas as escolhas são suas.
+    </p>
+  </div>
+
+  <div class="chapter-end">
+    <div class="chapter-end-line"></div>
+    <div class="chapter-end-gem"></div>
+    <div class="chapter-end-line"></div>
+  </div>
+</div>
+
+<!-- ═══ RODAPÉ ═══ -->
+<div style="text-align:center; padding:40px 0 20px; border-top:1px solid var(--border-red);">
+  <div style="font-family:'Cinzel',serif; font-size:10px; letter-spacing:4px; color:var(--text-dim); text-transform:uppercase;">
+    Curses and Sorcerers · Segunda Edição · Revisão Completa do Sistema
+  </div>
+  <div style="width:4px;height:4px;background:var(--red-dim);transform:rotate(45deg);margin:16px auto 0;"></div>
+</div>
+
+</body>
+</html>
